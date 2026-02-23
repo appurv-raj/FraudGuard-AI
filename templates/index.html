@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudGuard AI</title>
+
+    <!-- ✅ Proper Flask Static Linking -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">
+        <div class="logo-box">
+    <img src="{{ url_for('static', filename='secure-card.svg') }}" alt="Logo">
+</div>
+        <div>
+            <h2>FraudGuard AI</h2>
+            <span>Smart Transaction Monitoring</span>
+        </div>
+    </div>
+    <div class="status">Live System</div>
+</div>
+
+<div class="card">
+
+    <h3>Transaction Analysis</h3>
+
+    <form action="{{ url_for('predict') }}" method="post">
+
+        <div class="row">
+            <div class="input-group">
+                <label>Transaction ID</label>
+                <input type="text" name="transaction_id" placeholder="e.g. TXN10045" required>
+            </div>
+
+            <div class="input-group">
+                <label>Transaction Amount ($)</label>
+                <input type="number" step="0.01" name="amount" placeholder="Enter amount" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label>Merchant ID</label>
+                <input type="number" name="merchant_id" placeholder="Enter merchant ID" required>
+            </div>
+
+            <div class="input-group">
+                <label>Transaction Type</label>
+                <select name="transaction_type" required>
+                    <option value="">Select type</option>
+                    <option value="purchase">Purchase</option>
+                    <option value="refund">Refund</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label>Location</label>
+                <select name="location" required>
+                    <option value="">Select location</option>
+                    <option value="San Antonio">San Antonio</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="New York">New York</option>
+                    <option value="Chicago">Chicago</option>
+                    <option value="Houston">Houston</option>
+                    <option value="Los Angeles">Los Angeles</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Transaction Date</label>
+                <input type="date" name="date" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label>Transaction Time (HH:MM)</label>
+                <input type="time" name="time" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn">Analyze</button>
+
+    </form>
+
+    {% if risk_score %}
+    <div class="result">
+
+        <div class="dashboard">
+
+            <div class="left-panel">
+                <h2>Fraud Risk: {{risk_score}}%</h2>
+                <p><strong>Transaction ID:</strong> {{transaction_id}}</p>
+
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{risk_score}}%;"></div>
+                </div>
+
+                <h3>{{risk_level}}</h3>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="riskChart"></canvas>
+            </div>
+
+        </div>
+
+        <script>
+            const ctx = document.getElementById('riskChart');
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Legitimate', 'Fraud'],
+                    datasets: [{
+                        data: [{{100 - risk_score}}, {{risk_score}}],
+                        backgroundColor: ['#22c55e', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        </script>
+
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
